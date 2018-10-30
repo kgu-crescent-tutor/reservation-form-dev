@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-FRAME-OPTIONS" content="ALLOW-FROM https://google.com/">
+    <style>
+      :root {
+          --calendar-width  : calc(60vw);
+          --calendar-height : 100vh;
+          --form-width      : calc(100vw - var(--calendar-width));
+          --form-height     : 100vh;
+      }
+      body {
+          margin   : 0;
+          padding  : 0;
+          overflow : hidden;
+      }
+      iframe {
+          border: none;
+      }
+      .float {
+          float: left;
+      }
+      .calendar {
+          margin  : 0;
+          padding : 0;
+          width   : var(--calendar-width);
+          height  : var(--calendar-height);
+      }
+      .form {
+          margin  : 0;
+          padding : 0;
+          width   : var(--form-width);
+          height  : var(--form-height);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="float">
+      <object type="text/html" data="https://calendar.google.com/calendar/embed?src=dk1ghlhdpkkkgb1m3kk26c86t0%40group.calendar.google.com&ctz=Asia%2FTokyo" class="calendar">
+        <p>お使いのブラウザはobjectタグに対応しておりません。</p>
+      </object>
+    </div>
+    <div class="float">
+      <object type="text/html" data="https://docs.google.com/forms/d/e/1FAIpQLSd4SFWVvX2j2bvkToyzaORVVG-7V_LmLLY9oi1RnR2CiUcQXw/viewform?embedded=true" class="form">
+      </object>
+    </div>
+  </body>
+</html>
+
+
+
+
+
