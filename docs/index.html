@@ -9,45 +9,58 @@
 
     <style>
       :root {
-          --calendar-width  : calc(60vw);
-          --calendar-height : 100vh;
-          --form-width      : calc(100vw - var(--calendar-width));
-          --form-height     : 100vh;
+          --scroll-bar-width: calc(100vw - 100%);
+          --calendar-width:   calc(60vw);
+          --calendar-height:  100vh;
+          --form-width:       calc(100vw - var(--calendar-width));
+          --form-height:      100vh;
       }
+
       html,
       body {
-          margin   : 0;
-          padding  : 0;
-          overflow : hidden;
+          overflow: hidden;
       }
-      iframe {
-          border: none;
+
+      #text {
+          margin:  0;
+          padding: 0;
+          width:   0;
       }
-      .float {
-          float: left;
+
+      html,
+      body,
+      div.inline-block,
+      div.inline-block object#calendar,
+      div.inline-block object#form {
+          margin:  0;
+          padding: 0;
+          border:  none;
       }
-      #calendar {
-          margin  : 0;
-          padding : 0;
-          width   : var(--calendar-width);
-          height  : var(--calendar-height);
+
+      div.inline-block {
+          display: inline-block;
+          float:   left;
       }
-      #form {
-          margin  : 0;
-          padding : 0;
-          width   : var(--form-width);
-          height  : var(--form-height);
+
+      div.inline-block object#calendar {
+          width:   var(--calendar-width);
+          height:  var(--calendar-height);
+      }
+      div.inline-block object#form {
+          width:   var(--form-width);
+          height:  var(--form-height);
       }
     </style>
   </head>
+
   <body>
-    <div class="float">
-      <object type="text/html" id="calendar" data="">
-        <p>お使いのブラウザはobjectタグに対応しておりません。</p>
+    <div class="inline-block">
+      <object type="text/html" id="calendar">
+        <p>JavaScript を有効にしてください.</p>
+        <p>JavaScript が有効化されていても表示されない場合, ご使用のブラウザがサポートされていない可能性があります.</p>
       </object>
-    </div>
-    <div class="float">
-      <object type="text/html" id="form" >
+    </div>    <div class="inline-block">
+      <object type="text/html" id="form">
       </object>
     </div>
   </body>
@@ -86,6 +99,7 @@
     }
   </script>
 </html>
+
 
 
 
