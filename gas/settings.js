@@ -13,6 +13,10 @@ var settings = {
     "calendar"  : "https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo",
     "cal_id"    : "vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com",
   },
+
+  // "notification_address" : "tutor@ml.kwansei.ac.jp",
+  "notification_address" : "yuuki.oosako@kwansei.ac.jp",
+
 }
 
 
@@ -25,3 +29,4 @@ var column_date      = 6
 var column_period    = 7
 var column_time      = 8
 var column_content   = 9
+
