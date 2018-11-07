@@ -1,6 +1,6 @@
 #+STARTUP: showall
 
-* 問題点
+* 現在のフォームの問題点
 - 予約者が, 既に予約が入っている時間に予約を入れてしまう
 - 予約者が, 過去の日付などの不正な日時を入力してしんまう
 - チューター側で予約一覧が確認できない (他のチューターの空き時間が分からない)
@@ -10,7 +10,6 @@
 Google カレンダーと Google フォームを同時に表示する.
 関学の WEB サーバは管理の都合で使わない方がよさそうなので,
 GitHub Pages に HTML を置く.
-
 
 ** 本番環境
 - URL: https://kgu-crescent-tutor.github.io/reservation-form/
@@ -28,10 +27,7 @@ GitHub Pages に HTML を置く.
 * 新フォーム移行作業
 ** Google アカウント作成
 - 今まではコモンズのアカウントを使用していたが, 管理のしやすさの都合で別途作成
-
-- ID: kgu.crescent.tutor
-- PW: c0mm0ns2018
-
+  - ID: kgu.crescent.tutor
 
 ** フォーム作成
 - https://docs.google.com/forms/ から新規フォームを作成
@@ -50,7 +46,6 @@ GitHub Pages に HTML を置く.
   - "【開発用】" 等を名前に付けておくとわかりやすい
   - 今回は, 同じ GAS で判定ロジックのテストのみを別カレンダーを用いて行う
   - デプロイの仕組みが整えば, 別で用意すべき
-
 
 ** 予約を登録する用のカレンダーを作成
 - https://calendar.google.com/calendar/
@@ -84,143 +79,26 @@ GAS でフォームに投稿された時間帯にイベントを登録する.
   - この時, (複数の Google アカウントを切り替えて使用している人は)
     チューターの Google アカウントがデフォルトアカウントになっていないと開くのに失敗する
     (デフォルトアカウントに切りかえてログアウト → チューターアカウントでログイン)
-- エディタに以下のプログラムをペースト
 
 
-#+LaTeX: \begin{oframed}
+- (エディタに以下のプログラムをペースト) → clasp でのデプロイ方法を追記
 
-  #+BEGIN_SRC js
-  // TODO: とりあえず, 開始時刻が業務時間内ならエラーにしない仕様にしている. 要検討
-
-  // const/let が使えないことに注意
-  var column_timestamp = 1
-  var column_dept      = 2
-  var column_grade     = 3
-  var column_name      = 4
-  var column_mail      = 5
-  var column_date      = 6
-  var column_period    = 7
-  var column_time      = 8
-  var column_content   = 9
-
-
-  // イベントハンドラ
-  function register_reservation_in_calendar(e) {
-    try {
-      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(); // スプレッドシートを開く
-      var newest_row = sheet.getLastRow(); // 新規予約された行番号を取得
-
-      // 回答内容を取得
-      var dept       = sheet.getRange(newest_row, column_dept ).getValue()
-      var grade      = sheet.getRange(newest_row, column_grade).getValue()
-      var name       = sheet.getRange(newest_row, column_name ).getValue()
-      var address    = sheet.getRange(newest_row, column_mail ).getValue()
-      var date       = new Date(sheet.getRange(newest_row, column_date).getValue())
-      var start_time = new Date(sheet.getRange(newest_row, column_time).getValue())
-      var end_time   = new Date(start_time.getTime())
-      end_time.setMinutes(start_time.getMinutes() + 30)
-
-      // 日時オブジェクトの生成
-      var start_date_time = new Date(
-        date.getFullYear(), date.getMonth(), date.getDate(),
-        start_time.getHours(), start_time.getMinutes(), 0
-      )
-      var end_date_time   = new Date(
-        date.getFullYear(), date.getMonth(), date.getDate(),
-        end_time.getHours(), end_time.getMinutes(), 0
-      )
-
-      // 予約を記載するカレンダーを取得
-      var cal = CalendarApp.getCalendarById("「ここは本番環境用カレンダー ID」@group.calendar.google.com")
-
-      var ret = generate_mail_data(dept, grade, name, address, start_date_time, end_date_time, cal)
-      var description = "予約" + dept + grade + name
-
-      if ( ret.success ) {
-        var event = cal.createEvent("予約", start_date_time, end_date_time, {
-          description : description,
-          guests      : address,
-        })
-      }
-
-      MailApp.sendEmail(address, ret.title, ret.body) // エラーの可能性を考慮して最後に送信する
-    } catch(exp) {
-      //実行に失敗した時に通知
-      Logger.log(exp.message)
-      MailApp.sendEmail(address, 'クレセントチューター予約 システムエラー', "予約に失敗しました.\nお問い合せは tutor@ml.kwansei.ac.jp へお願いします")
-    }
-  }
-
-
-  // エラーチェック & メールの本文生成
-  function generate_mail_data(dept, grade, name, address, start_date_time, end_date_time, cal) {
-    var today = new Date()
-
-    var tutor_am_start_time = new Date(start_date_time); tutor_am_start_time.setHours(11,10)
-    var tutor_am_end_time   = new Date(start_date_time); tutor_am_end_time.setHours(12,40)
-    var tutor_pm_start_time = new Date(start_date_time); tutor_pm_start_time.setHours(13,30)
-    var tutor_pm_end_time   = new Date(start_date_time); tutor_pm_end_time.setHours(18,20)
-
-    var mail_title = ''
-    var mail_body  = name + "さん,\n\n"
-
-    var f_success = false
-
-    if ( cal.getEvents(start_date_time, end_date_time) != 0 ) { // 先約チェック
-      mail_title = 'クレセントチューター 予約失敗 予約重複エラー'
-      mail_body  += "ご指定の時間に先約があり, ご予約いただけませんでした.\n"
-      mail_body  += "申し訳ございませんが, 日時を変更して再度お申込みください\n\n"
-    }
-    else if ( start_date_time < today ){
-      mail_title = 'クレセントチューター 予約失敗 日付エラー'
-      mail_body  += "ご指定の時間が過ぎているため, ご予約いただけませんでした.\n"
-      mail_body  += "申し訳ございませんが, 日時を変更して再度お申込みください\n\n"
-    }
-    else if ( start_date_time.getDay() == 0 || start_date_time.getDay() == 6 ){
-      mail_title = 'クレセントチューター 予約失敗 曜日エラー'
-      mail_body  += "ご指定の時間が休日のため, ご予約いただけませんでした.\n"
-      mail_body  += "申し訳ございませんが, 日付を変更して再度お申込みください\n\n"
-    }
-    else if (
-      start_date_time < tutor_am_start_time
-      || (tutor_am_end_time <= start_date_time && start_date_time < tutor_pm_start_time)
-      || tutor_pm_end_time <= start_date_time
-    ){
-      mail_title = 'クレセントチューター 予約失敗 時間エラー'
-      mail_body  += "ご指定の時間が時間外のため, ご予約いただけませんでした.\n"
-      mail_body  += "申し訳ございませんが, 時間を変更して再度お申込みください\n\n"
-    }
-    else{
-      // 予約情報をカレンダーに追加
-      var description = dept+grade+'/'+name + 'さん'
-
-      mail_title = 'クレセントチューター 仮予約'
-      mail_body  += "仮予約を承りました.\n"
-      mail_body  += "別途, 確定のお知らせをいたします.\n\n"
-      mail_body  += "ありがとうございました\n\n"
-
-      f_success = true
-    }
-
-    mail_body += "※このメールは自動送信されています.\n"
-    mail_body += "  お問い合せは tutor@ml.kwansei.ac.jp へお願いします\n"
-
-    return {'success': f_success, 'title': mail_title, 'body': mail_body}
-  }
-  #+END_SRC
-
-#+LaTeX: \end{oframed}
 
 *** プログラムで使用する ID の記述
-- プログラム内の 2 箇所にメモしたカレンダー ID を記入
-  - "「ここは本番環境用カレンダー ID」@group.calendar.google.com"
-  - "「ここはテスト用カレンダー ID」@group.calendar.google.com"
+# - プログラム内の 2 箇所にメモしたカレンダー ID を記入
+#   - "「ここは本番環境用カレンダー ID」@group.calendar.google.com"
+#   - "「ここはテスト用カレンダー ID」@group.calendar.google.com"
+
+TODO: setting.js を整備したら書く
+
 
 *** テストの実行
 この時点で, (テスト用) ID が正しく設定できていれば, テストが通るはず
+
+- 画面左のファイル一覧から, "tests/generate_mail_data.gs" を選択
 - 画面左上の "関数を選択" から "test_generate_mail_data" を選択
-- 左隣のデバッグボタン (虫マーク) をクリック
-- メニューの "表示" → "ログ" を確認し, 全て OK になっていることを確認
+- 左隣の再生ボタン (三角マーク) をクリック
+- Ctrl + Enter を押し, 全て OK になっていることを確認
 
 
 *** フォーム投稿時にプログラムが呼ばれるようにする
@@ -237,7 +115,11 @@ GAS でフォームに投稿された時間帯にイベントを登録する.
 - リストに追加されていれば成功
 
 
-*** 動作確認 (フォームに投稿してみる)
+** チューター担当時間割の設定
+TODO: 書く
+
+
+** 動作確認 (フォームに投稿してみる)
 - 正しい日付/時間等で, 自分のメールアドレスを使って予約
   - カレンダーに入ることを確認
   - 仮予約メールが来ることを確認
@@ -262,8 +144,6 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する
 
 - 普通に登録
   - ID: kgu-crescent-tutor
-  - PW: c0mm0ns2018
-  - mail: kgu.crescent.tutor@gmail.com
 
 
 *** フォーム用リポジトリの作成
@@ -284,60 +164,7 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する
 以下の内容で index.html を作成
 
   #+BEGIN_SRC html
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <meta http-equiv="X-FRAME-OPTIONS" content="ALLOW-FROM https://google.com/">
-      <style>
-        :root {
-            --calendar-width  : calc(60vw);
-            --calendar-height : 100vh;
-            --form-width      : calc(100vw - var(--calendar-width));
-            --form-height     : 100vh;
-        }
-        html,
-        body {
-            margin   : 0;
-            padding  : 0;
-            overflow : hidden;
-        }
-        iframe {
-            border: none;
-        }
-        .float {
-            float: left;
-        }
-        .calendar {
-            margin  : 0;
-            padding : 0;
-            width   : var(--calendar-width);
-            height  : var(--calendar-height);
-        }
-        .form {
-            margin  : 0;
-            padding : 0;
-            width   : var(--form-width);
-            height  : var(--form-height);
-        }
-      </style>
-    </head>
-    <body>
-      <div class="float">
-        <object type="text/html" data="「ここはカレンダーの URL」" class="calendar">
-          <p>お使いのブラウザはobjectタグに対応しておりません。</p>
-        </object>
-      </div>
-      <div class="float">
-        <object type="text/html" data="「ここはフォームの URL」" class="form">
-        </object>
-      </div>
-    </body>
-  </html>
   #+END_SRC
-
-
-- 
-
 
 
 
