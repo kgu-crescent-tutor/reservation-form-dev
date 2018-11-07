@@ -1,0 +1,460 @@
+#+STARTUP: showall
+
+
+* 問題点
+- 予約者が, 既に予約が入っている時間に予約を入れてしまう
+- 予約一覧が確認できない (他のチューターの空き時間が分からない)
+
+
+* 新フォーム
+Google カレンダーと Google フォームを表示しているだけ
+
+** 本番環境
+- URL: \url{https://kgu-crescent-tutor.github.io/reservation-form/}
+- フォームのみ: \url{https://docs.google.com/forms/d/e/1FAIpQLSdeo86ioR4akCnrsQ1aP4KaKKh5oux3mkCuMxiHiFaFzZWZAQ/viewform}
+- カレンダーのみ: \url{https://calendar.google.com/calendar/embed?src=fnoa9u9fdefeppdj5f10ioklhc%40group.calendar.google.com&ctz=Asia%2FTokyo}
+  - カレンダー ID: \url{fnoa9u9fdefeppdj5f10ioklhc@group.calendar.google.com}
+
+** 開発環境
+- URL:
+- フォーム: \url{}
+- カレンダー: \url{https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo}
+  - カレンダー ID: \url{vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com}
+
+
+
+# https://ks-yuzu.github.io/ct-reservation-dev/
+
+* 新フォーム移行作業
+** Google アカウント作成
+- 今まではコモンズのアカウントを使用していたが, 管理のしやすさの都合で別途作成
+
+- ID: kgu.crescent.tutor
+- PW: c0mm0ns2018
+
+
+** フォーム作成
+- https://docs.google.com/forms/ から新規フォームを作成
+- 時間割画像と, 種質問項目を設定
+- 質問項目は以下の 8 個
+  - 学部を選択してください * (ラジオボタン: 理工学部/総合政策学部/その他)
+  - 学年を選択してください * (ラジオボタン: 1回生/2回生/3回生/4回生/その他)
+  - 氏名を記入してください *
+  - メールアドレスを記入してください *
+  - 予約したい日を選択してください * (日付入力フォーム)
+  - 予約したい時間帯を選択してください * (ラジオボタン: 2限/3限/4限/5限)
+  - 開始時間の希望があれば記入してください * (時間入力フォーム)
+  - 相談内容を記入してください *
+
+- 必要があれば, テスト用のフォームを別に生成する
+  - "【開発用】" 等を名前に付けておくとわかりやすい
+  - 今回は, 同じ GAS で判定ロジックのテストのみを別カレンダーを用いて行う
+  - デプロイの仕組みが整えば, 別で用意すべき
+
+
+** 予約を登録する用のカレンダーを作成
+- https://calendar.google.com/calendar/
+- "+" ボタンから, "新しいカレンダー" を追加
+- "チューター予約" 等の名前でカレンダーを登録
+- 設定画面を開く (普通は画面したに "設定" ボタンが出る)
+  - 手動で開く場合は, 画面左のカレンダー一覧から,
+    作成したカレンダー名の右のメニューボタンを押し, "設定と共有" をクリック
+- アクセス権限を設定
+  - 左の "アクセス権限" をクリック
+  - "一般公開して誰でも利用できるようにする" にチェック
+  - "予定の時間枠のみを表示 (詳細を非表示)" にする ← 重要
+- カレンダー ID を確認
+  - 左の "カレンダーの統合" をクリック
+  - カレンダー ID の欄の abcdefghijklmnopqrstuvwxyz@group.calendar.google.com 形式の
+    ID をコピー (メモ) しておく
+  - このカレンダーの公開 URL も (エディタ等に) メモしておく
+
+- 同様の作業を繰り返し, テスト用のカレンダーを別に生成する (必須)
+  - "【開発用】チューター予約" 等の名前にしておくとわかりやすい
+  - ID とカレンダーの公開 URL を同様にメモしておく
+
+
+** GAS 設定 (フォームからカレンダーへイベントを追加するプログラムを登録)
+GAS でフォームに投稿された時間帯にイベントを登録する.
+その際にチェックも行う.
+
+- フォームの "回答" タブから回答のスプレッドシートを開く
+- タイムスタンプと各種質問のカラムからなるテーブルが生成される
+- ツール → スクリプトエディタ
+  - この時, (複数の Google アカウントを切り替えて使用している人は)
+    チューターの Google アカウントがデフォルトアカウントになっていないと開くのに失敗する
+    (デフォルトアカウントに切りかえてログアウト → チューターアカウントでログイン)
+- エディタに以下のプログラムをペースト
+
+
+#+LaTeX: \begin{oframed}
+
+  #+BEGIN_SRC js
+  // TODO: とりあえず, 開始時刻が業務時間内ならエラーにしない仕様にしている. 要検討
+
+  // const/let が使えないことに注意
+  var column_timestamp = 1
+  var column_dept      = 2
+  var column_grade     = 3
+  var column_name      = 4
+  var column_mail      = 5
+  var column_date      = 6
+  var column_period    = 7
+  var column_time      = 8
+  var column_content   = 9
+
+
+  // イベントハンドラ
+  function register_reservation_in_calendar(e) {
+    try {
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(); // スプレッドシートを開く
+      var newest_row = sheet.getLastRow(); // 新規予約された行番号を取得
+
+      // 回答内容を取得
+      var dept       = sheet.getRange(newest_row, column_dept ).getValue()
+      var grade      = sheet.getRange(newest_row, column_grade).getValue()
+      var name       = sheet.getRange(newest_row, column_name ).getValue()
+      var address    = sheet.getRange(newest_row, column_mail ).getValue()
+      var date       = new Date(sheet.getRange(newest_row, column_date).getValue())
+      var start_time = new Date(sheet.getRange(newest_row, column_time).getValue())
+      var end_time   = new Date(start_time.getTime())
+      end_time.setMinutes(start_time.getMinutes() + 30)
+
+      // 日時オブジェクトの生成
+      var start_date_time = new Date(
+        date.getFullYear(), date.getMonth(), date.getDate(),
+        start_time.getHours(), start_time.getMinutes(), 0
+      )
+      var end_date_time   = new Date(
+        date.getFullYear(), date.getMonth(), date.getDate(),
+        end_time.getHours(), end_time.getMinutes(), 0
+      )
+
+      // 予約を記載するカレンダーを取得
+      var cal = CalendarApp.getCalendarById("「ここは本番環境用カレンダー ID」@group.calendar.google.com")
+
+      var ret = generate_mail_data(dept, grade, name, address, start_date_time, end_date_time, cal)
+      var description = "予約" + dept + grade + name
+
+      if ( ret.success ) {
+        var event = cal.createEvent("予約", start_date_time, end_date_time, {
+          description : description,
+          guests      : address,
+        })
+      }
+
+      MailApp.sendEmail(address, ret.title, ret.body) // エラーの可能性を考慮して最後に送信する
+    } catch(exp) {
+      //実行に失敗した時に通知
+      Logger.log(exp.message)
+      MailApp.sendEmail(address, 'クレセントチューター予約 システムエラー', "予約に失敗しました.\nお問い合せは tutor@ml.kwansei.ac.jp へお願いします")
+    }
+  }
+
+
+  // エラーチェック & メールの本文生成
+  function generate_mail_data(dept, grade, name, address, start_date_time, end_date_time, cal) {
+    var today = new Date()
+
+    var tutor_am_start_time = new Date(start_date_time); tutor_am_start_time.setHours(11,10)
+    var tutor_am_end_time   = new Date(start_date_time); tutor_am_end_time.setHours(12,40)
+    var tutor_pm_start_time = new Date(start_date_time); tutor_pm_start_time.setHours(13,30)
+    var tutor_pm_end_time   = new Date(start_date_time); tutor_pm_end_time.setHours(18,20)
+
+    var mail_title = ''
+    var mail_body  = name + "さん,\n\n"
+
+    var f_success = false
+
+    if ( cal.getEvents(start_date_time, end_date_time) != 0 ) { // 先約チェック
+      mail_title = 'クレセントチューター 予約失敗 予約重複エラー'
+      mail_body  += "ご指定の時間に先約があり, ご予約いただけませんでした.\n"
+      mail_body  += "申し訳ございませんが, 日時を変更して再度お申込みください\n\n"
+    }
+    else if ( start_date_time < today ){
+      mail_title = 'クレセントチューター 予約失敗 日付エラー'
+      mail_body  += "ご指定の時間が過ぎているため, ご予約いただけませんでした.\n"
+      mail_body  += "申し訳ございませんが, 日時を変更して再度お申込みください\n\n"
+    }
+    else if ( start_date_time.getDay() == 0 || start_date_time.getDay() == 6 ){
+      mail_title = 'クレセントチューター 予約失敗 曜日エラー'
+      mail_body  += "ご指定の時間が休日のため, ご予約いただけませんでした.\n"
+      mail_body  += "申し訳ございませんが, 日付を変更して再度お申込みください\n\n"
+    }
+    else if (
+      start_date_time < tutor_am_start_time
+      || (tutor_am_end_time <= start_date_time && start_date_time < tutor_pm_start_time)
+      || tutor_pm_end_time <= start_date_time
+    ){
+      mail_title = 'クレセントチューター 予約失敗 時間エラー'
+      mail_body  += "ご指定の時間が時間外のため, ご予約いただけませんでした.\n"
+      mail_body  += "申し訳ございませんが, 時間を変更して再度お申込みください\n\n"
+    }
+    else{
+      // 予約情報をカレンダーに追加
+      var description = dept+grade+'/'+name + 'さん'
+
+      mail_title = 'クレセントチューター 仮予約'
+      mail_body  += "仮予約を承りました.\n"
+      mail_body  += "別途, 確定のお知らせをいたします.\n\n"
+      mail_body  += "ありがとうございました\n\n"
+
+      f_success = true
+    }
+
+    mail_body += "※このメールは自動送信されています.\n"
+    mail_body += "  お問い合せは tutor@ml.kwansei.ac.jp へお願いします\n"
+
+    return {'success': f_success, 'title': mail_title, 'body': mail_body}
+  }
+
+
+  // data driven なテスト
+  function test_generate_mail_data() {
+    var today     = new Date()
+    var yesterday = new Date();  yesterday.setDate(today.getDate() - 1)
+    var tomorrow  = new Date();  tomorrow.setDate(today.getDate() + 1)
+
+    var dept    = '理工'
+    var grade   = '1回生'
+    var name    = '大迫裕樹'
+    var address = 'dummy@kwansei.ac.jp'
+
+    var patterns = [
+      // 失敗
+      {
+        'start_date_time' : function(){ var d = new Date(yesterday); d.setHours(16, 0); return d}, // 昨日の 16:00
+        'mail_title'      : 'クレセントチューター 予約失敗 日付エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(11, 9); return d}, // 明日の 11:09
+        'mail_title'      : 'クレセントチューター 予約失敗 時間エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(12, 40); return d}, // 明日の 12:40
+        'mail_title'      : 'クレセントチューター 予約失敗 時間エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(13, 29); return d}, // 明日の 13:29
+        'mail_title'      : 'クレセントチューター 予約失敗 時間エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(18, 20); return d}, // 明日の 18:20
+        'mail_title'      : 'クレセントチューター 予約失敗 時間エラー',
+        'success'         : false,
+      },
+      {
+        'setup'           : function(start, end){
+          cal.createEvent("ダミー先約", start, end, { description : 'ダミー先約', guests : address })
+        },
+        'teardown'        : function(start, end){
+          var events = cal.getEvents(start, end)
+          for (var idx in events) { events[idx].deleteEvent() }
+        },
+        'start_date_time' : function(){ return new Date(2100, 0, 1, 16) },     // 2100/01/01 16:00 (先約有り)
+        'mail_title'      : 'クレセントチューター 予約失敗 予約重複エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ return new Date(2100, 0, 2, 16) },     // 2100/01/02 16:00 (土曜)
+        'mail_title'      : 'クレセントチューター 予約失敗 曜日エラー',
+        'success'         : false,
+      },
+      {
+        'start_date_time' : function(){ return new Date(2100, 0, 3, 16) },     // 2100/01/03 16:00 (日曜)
+        'mail_title'      : 'クレセントチューター 予約失敗 曜日エラー',
+        'success'         : false,
+      },
+
+      // 成功
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(11, 10); return d}, // 明日 11:10
+        'mail_title'      : 'クレセントチューター 仮予約',
+        'success'         : true,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(12, 39); return d}, // 明日 12:39
+        'mail_title'      : 'クレセントチューター 仮予約',
+        'success'         : true,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(13, 30); return d}, // 明日 13:30
+        'mail_title'      : 'クレセントチューター 仮予約',
+        'success'         : true,
+      },
+      {
+        'start_date_time' : function(){ var d = new Date(tomorrow); d.setHours(18, 19); return d}, // 明日 18:19
+        'mail_title'      : 'クレセントチューター 仮予約',
+        'success'         : true,
+      },
+    ]
+
+    var cal = CalendarApp.getCalendarById("「ここはテスト用カレンダー ID」@group.calendar.google.com")
+
+    for ( var idx in patterns ) {
+      var pattern = patterns[idx]
+
+      // 時刻オブジェクト生成
+      var start_date_time = pattern.start_date_time() // 予約時刻
+      var end_date_time   = new Date(start_date_time) // 推定終了時刻 (30分後)
+      end_date_time.setMinutes(start_date_time.getMinutes() + 30)
+
+      // (必要なら) 準備
+      if ( pattern.setup ) pattern.setup(start_date_time, end_date_time)
+
+      // エラーチェック処理 (メイン)
+      var ret = generate_mail_data(dept, grade, name, address, start_date_time, end_date_time, cal)
+
+      // テスト
+      Logger.log('テストパターン' + (Number(idx) + 1) + ': ' + start_date_time.toString())
+      Logger.log('  予約可否判定が正しい: ' + ( ret.success === pattern.success ? 'OK' : 'NG' ))
+      Logger.log('  状態判定が正しい: '    + ( ret.title === pattern.mail_title ? 'OK' : 'NG' ))
+      if ( ret.title !== pattern.mail_title ) {
+        Logger.log('    got: ' + ret.title)
+        Logger.log('    exp: ' + pattern.mail_title)
+      }
+
+      // (必要なら) 後処理
+      if ( pattern.teardown ) pattern.teardown(start_date_time, end_date_time)
+    }
+  }
+  #+END_SRC
+
+#+LaTeX: \end{oframed}
+
+*** プログラムで使用する ID の記述
+- プログラム内の 2 箇所にメモしたカレンダー ID を記入
+  - "「ここは本番環境用カレンダー ID」@group.calendar.google.com"
+  - "「ここはテスト用カレンダー ID」@group.calendar.google.com"
+
+*** テストの実行
+この時点で, (テスト用) ID が正しく設定できていれば, テストが通るはず
+- 画面左上の "関数を選択" から "test_generate_mail_data" を選択
+- 左隣のデバッグボタン (虫マーク) をクリック
+- メニューの "表示" → "ログ" を確認し, 全て OK になっていることを確認
+
+
+*** フォーム投稿時にプログラムが呼ばれるようにする
+- スクリプトエディタの "編集" → "現在のプロジェクトのトリガー" をクリック
+- "トリガーを追加" をクリック
+- 登録フォームに以下を記載して "保存" をクリック
+  - 実行する関数を選択: register_reservation_in_calender
+  - 実行するデプロイを選択: HEAD
+  - イベントのソースを選択: スプレッドシートから
+  - イベントの種類を選択: フォーム送信時
+  - エラー通知設定: 今すぐ通知を受け取る
+- "(プロジェクト名) が Google アカウントへのアクセスをリクエストしています" という画面が出るので許可
+  - 出ない場合はポップアップがブロックされている可能性あり
+- リストに追加されていれば成功
+
+
+*** 動作確認 (フォームに投稿してみる)
+- 正しい日付/時間等で, 自分のメールアドレスを使って予約
+  - カレンダーに入ることを確認
+  - 仮予約メールが来ることを確認
+
+- 入力が不正な場合も確認
+  - 上記のテストが通っていれば, 問題ないはず
+
+
+** 担当者への予約通知を設定
+- TODO: 書く
+
+*** 動作確認 (フォームに投稿してみる)
+- 予約してみて通知メールが正しければ OK
+
+
+** GitHub Pages での公開
+*** GitHub アカウントの作成
+予約フォームには Google カレンダーと Google フォームを同時に表示させるため,
+別の HTML をかませる.
+関学のサーバに HTML を置くと手間がかかる問題があるので,
+GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する
+
+- 普通に登録
+  - ID: kgu-crescent-tutor
+  - PW: c0mm0ns2018
+  - mail: kgu.crescent.tutor@gmail.com
+
+
+*** フォーム用リポジトリの作成
+- 右上の "+" ボタンから New Repository
+  - Repository name: reservation-form
+  - ほかはそのまま
+
+
+*** リポジトリ内の HTML の公開設定
+- /docs ディレクトリ内に html ファイルを含むリポジトリを push (Git の話はここでは省略)
+- プロジェクトの settings の下のほうにある "GitHub Pages" を探す
+- Source を None から Master branch /docs folder に変更
+- "Save" をクリック
+- Save ボタンの上の "Your site is ready to be published at (公開URL)" の URL をメモ
+
+
+** 公開する HTML (カレンダー/フォームのページ) 作成
+以下の内容で index.html を作成
+
+  #+BEGIN_SRC html
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta http-equiv="X-FRAME-OPTIONS" content="ALLOW-FROM https://google.com/">
+      <style>
+        :root {
+            --calendar-width  : calc(60vw);
+            --calendar-height : 100vh;
+            --form-width      : calc(100vw - var(--calendar-width));
+            --form-height     : 100vh;
+        }
+        html,
+        body {
+            margin   : 0;
+            padding  : 0;
+            overflow : hidden;
+        }
+        iframe {
+            border: none;
+        }
+        .float {
+            float: left;
+        }
+        .calendar {
+            margin  : 0;
+            padding : 0;
+            width   : var(--calendar-width);
+            height  : var(--calendar-height);
+        }
+        .form {
+            margin  : 0;
+            padding : 0;
+            width   : var(--form-width);
+            height  : var(--form-height);
+        }
+      </style>
+    </head>
+    <body>
+      <div class="float">
+        <object type="text/html" data="「ここはカレンダーの URL」" class="calendar">
+          <p>お使いのブラウザはobjectタグに対応しておりません。</p>
+        </object>
+      </div>
+      <div class="float">
+        <object type="text/html" data="「ここはフォームの URL」" class="form">
+        </object>
+      </div>
+    </body>
+  </html>
+  #+END_SRC
+
+
+- 
+
+
+
+
+* 参考になる (かもしれない) ページ
+- \url{https://tom2rd.sakura.ne.jp/wp/2017/07/27/post-5346/}
