@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="X-FRAME-OPTIONS" content="ALLOW-FROM https://google.com/">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>クレセントチューター予約フォーム</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <style>
       :root {
           --calendar-width  : calc(60vw);
@@ -21,13 +26,13 @@
       .float {
           float: left;
       }
-      .calendar {
+      #calendar {
           margin  : 0;
           padding : 0;
           width   : var(--calendar-width);
           height  : var(--calendar-height);
       }
-      .form {
+      #form {
           margin  : 0;
           padding : 0;
           width   : var(--form-width);
@@ -37,18 +42,51 @@
   </head>
   <body>
     <div class="float">
-      <!-- <object type="text/html" data="https://calendar.google.com/calendar/embed?src=dk1ghlhdpkkkgb1m3kk26c86t0%40group.calendar.google.com&ctz=Asia%2FTokyo" class="calendar"> -->
-      <object type="text/html" data="https://calendar.google.com/calendar/embed?src=fnoa9u9fdefeppdj5f10ioklhc%40group.calendar.google.com&ctz=Asia%2FTokyo" class="calendar">
+      <object type="text/html" id="calendar" data="">
         <p>お使いのブラウザはobjectタグに対応しておりません。</p>
       </object>
     </div>
     <div class="float">
-      <!-- <object type="text/html" data="https://docs.google.com/forms/d/e/1FAIpQLSd4SFWVvX2j2bvkToyzaORVVG-7V_LmLLY9oi1RnR2CiUcQXw/viewform?embedded=true" class="form"> -->
-      <object type="text/html" data="https://docs.google.com/forms/d/e/1FAIpQLSdeo86ioR4akCnrsQ1aP4KaKKh5oux3mkCuMxiHiFaFzZWZAQ/viewform" class="form">
+      <object type="text/html" id="form" >
       </object>
     </div>
   </body>
+
+  <script>
+    const urls = {
+      "prod" : {
+        "host_path" : "kgu-crescent-tutor.github.io/reservation-form/",
+        "form"      : "https://docs.google.com/forms/d/e/1FAIpQLSdeo86ioR4akCnrsQ1aP4KaKKh5oux3mkCuMxiHiFaFzZWZAQ/viewform",
+        "calendar"  : "https://calendar.google.com/calendar/embed?src=fnoa9u9fdefeppdj5f10ioklhc%40group.calendar.google.com&ctz=Asia%2FTokyo",
+      },
+      "dev" : {
+        "host_path" : "kgu-crescent-tutor.github.io/reservation-form-dev/",
+        "form"      : "https://docs.google.com/forms/d/e/1FAIpQLScqKqY6Bq6Xo__o9CcNBZ1PaZsIuSEOfb961Ghkp_mnBwnPgw/viewform",
+        "calendar"  : "https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo",
+      },
+    }
+
+    function update_object(element, data) {
+      let new_element = element.cloneNode(true)
+      new_element.setAttribute("data", data)
+      element.parentNode.replaceChild(new_element, element);
+    }
+
+    // ホスト名とリクエストパスを取得
+    const current_host_path = location.host + location.pathname
+
+    // prod にデプロイした場合のみ本番用フォーム/カレンダーを表示
+    if ( current_host_path == urls.prod.host_path ) {
+      update_object( document.getElementById('calendar'), urls.prod.calendar )
+      update_object( document.getElementById('form'),     urls.prod.form )
+    }
+    else {
+      update_object( document.getElementById('calendar'), urls.dev.calendar )
+      update_object( document.getElementById('form'),     urls.dev.form )
+    }
+  </script>
 </html>
+
 
 
 
