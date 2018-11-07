@@ -1,6 +1,11 @@
 // TODO: とりあえず, 開始時刻が業務時間内ならエラーにしない仕様にしている. 要検討
 
-// イベントハンドラ
+/**
+ * @desc   イベントハンドラ. フォームに投稿された時に呼ばれる
+ * @param  {number} [arg1] - [説明]
+ * @param  {string} [arg2] - [説明]
+ * @return {string} [説明]
+ */
 function register_reservation_in_calendar(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet(); // スプレッドシートを開く
@@ -103,3 +108,4 @@ function generate_mail_data(dept, grade, name, address, start_date_time, end_dat
 
   return {'success': f_success, 'title': mail_title, 'body': mail_body}
 }
+

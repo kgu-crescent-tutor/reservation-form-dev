@@ -43,13 +43,40 @@
 
 /**
  * @test   tutor_timetable
- * @desc   チューター担当確認用テスト (出力は Ctrl + Enter で確認)
+ * @desc   チューター担当一覧を出力 (出力は Ctrl + Enter で確認)
  */
-function test_tutor_list() {
+function check_tutor_list() {
   for(var dow = 1; dow <= 5; dow++) {
     for(var period = 1; period <= 5; period++) {
       Logger.log( dow2dow_str(dow) + period + ' : ' + get_tutor(dow, period) )
     }
   }
 }
+
+
+
+/**
+ * @test   get_notification_mail_subject, get_notification_mail_body
+ * @desc   メールの件名, 本文をチェック
+ */
+function check_mail_content() {
+  var form_data = {
+    timestamp : "2018/11/07 15:17:42",
+    dept      : "理工学部",
+    grade     : "2回生",
+    name      : "おおさこ",
+    mail      : "yuuki.oosako@kwansei.ac.jp",
+    date      : "2018/11/08",
+    period    : "3限",
+    time      : "14:00:00",
+    content   : "○○について相談したいです",
+  }
+
+  Logger.log( dow )
+  Logger.log( period )
+
+  Logger.log( get_notification_mail_subject(form_data) )
+  Logger.log( get_notification_mail_body   (form_data) )
+}
+
 

@@ -1,5 +1,7 @@
 // 本来はフロントで使用する JS と共用にしておくべき
 
+// TODO: まとめる
+
 var settings = {
   "prod" : {
     "host_path" : "kgu-crescent-tutor.github.io/reservation-form/",
@@ -30,3 +32,50 @@ var column_period    = 7
 var column_time      = 8
 var column_content   = 9
 
+var columns = [
+  {
+    number   : 1,
+    title    : 'timestamp',
+    title_jp : 'タイムスタンプ',
+  },
+  {
+    number   : 2,
+    title    : 'dept',
+    title_jp : '学部を選択してください',
+  },
+  {
+    number   : 3,
+    title    : 'grade',
+    title_jp : '学年を選択してください',
+  },
+  {
+    number   : 4,
+    title    : 'name',
+    title_jp : '氏名を記入してください',
+  },
+  {
+    number   : 5,
+    title    : 'mail',
+    title_jp : 'メールアドレスを記入してください',
+  },
+  {
+    number   : 6,
+    title    : 'date',
+    title_jp : '予約したい日を選択してください',
+  },
+  {
+    number   : 7,
+    title    : 'period',
+    title_jp : '予約したい時間帯を選択してください',
+  },
+  {
+    number   : 8,
+    title    : 'time',
+    title_jp : '希望の開始時間を記入してください',
+  },
+  {
+    number   : 9,
+    title    : 'content',
+    title_jp : '相談内容を記入してください',
+  },
+]
