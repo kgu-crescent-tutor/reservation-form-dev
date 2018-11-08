@@ -47,7 +47,7 @@ function send_notification_mail(form_data) {
   var body = get_notification_mail_body(dow, period, form_data)
 
   // メール送信
-  GmailApp.sendEmail(address, title, body)
+  GmailApp.sendEmail(address, subject, body)
 }
 
 
@@ -81,16 +81,26 @@ function get_notification_mail_body(dow, period, form_data) {
 
   var joined_form_data = ''
 
+  // フォームの内容を送信用の文字列に整形
   for ( var idx in columns ) {
     var column = columns[idx]
 
-    joined_form_data += ('  ' + column.title_jp + ': ' + form_data[column.title])
+    if ( column.title !== 'date' && column.title !== 'time' ) {
+      joined_form_data += ('  ' + column.title_jp + ': ' + form_data[column.title])
+    }
+    else if ( column.title === 'date' ) {
+      joined_form_data += ('  ' + column.title_jp + ': ' )
+      joined_form_data += date2date_str( form_data.date )
 
-    // 日付の後に曜日をつける
-    if( column.title == 'date' ) {
-      // 曜日 (数値) に変換してから 曜日 (文字列) に変換する
-      var dow = dow2dow_str(date2dow(form_data[column.title]))
-      joined_form_data += ( " (" + dow + ")" )
+      var dow = dow2dow_str(date2dow(form_data.date))
+      joined_form_data += ( " (" + dow + ")" ) // 曜日も付ける
+    }
+    else if ( column.title === 'time' ) {
+      joined_form_data += ('  ' + column.title_jp + ': ' )
+      joined_form_data += date2time_str( form_data.time, 'hh:mm' )
+    }
+    else {
+      Logger.log('internal error')
     }
 
     joined_form_data += '\n'
@@ -105,7 +115,7 @@ function get_notification_mail_body(dow, period, form_data) {
 '+stage_str+'下記の内容で予約されました. \n\
 \n\
 内容確認後, 担当チューターは,\n\
-  To: '+form_data.address+' (予約者)\n\
+  To: '+form_data.mail+' (予約者)\n\
   Cc: '+address+' (チューターML)\n\
 として返信してください.\n\
 \n\
@@ -155,4 +165,25 @@ function dow2dow_str(dow) {
   return dowStrs[dow]
 }
 
+
+function date2date_str(date, format) {
+  if (!format) {
+    format = 'YYYY/MM/DD'
+  }
+  format = format.replace(/YYYY/g, date.getFullYear());
+  format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
+  format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
+  return format;
+}
+
+
+function date2time_str(date, format) {
+  if (!format) {
+    format = 'hh:mm:ss'
+  }
+  format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
+  format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
+  format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
+  return format;
+}
 

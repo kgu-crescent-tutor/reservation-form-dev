@@ -16,12 +16,11 @@ var settings = {
     "cal_id"    : "vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com",
   },
 
-  // "notification_address" : "tutor@ml.kwansei.ac.jp",
-  "notification_address" : "yuuki.oosako@kwansei.ac.jp",
-
+  "notification_address" : "tutor@ml.kwansei.ac.jp",
+  // "notification_address" : "yuuki.oosako@kwansei.ac.jp",
 }
 
-
+// TODO: 削除
 var column_timestamp = 1
 var column_dept      = 2
 var column_grade     = 3
@@ -79,3 +78,4 @@ var columns = [
     title_jp : '相談内容を記入してください',
   },
 ]
+

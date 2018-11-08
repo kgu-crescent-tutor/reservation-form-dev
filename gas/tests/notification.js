@@ -72,11 +72,13 @@ function check_mail_content() {
     content   : "○○について相談したいです",
   }
 
-  Logger.log( dow )
-  Logger.log( period )
+  // 予約された曜日/時限の抽出
+  var dow    = date2dow(form_data.date)
+  var period = form_data.period.match(/\d/)[0]
 
-  Logger.log( get_notification_mail_subject(form_data) )
-  Logger.log( get_notification_mail_body   (form_data) )
+  Logger.log( get_notification_mail_subject(dow, period) )
+  Logger.log( get_notification_mail_body   (dow, period, form_data) )
 }
+
 
 
