@@ -6,31 +6,12 @@
  */
 
 
-/**
- * タイムテーブル (2018 春)
- *
- * 設定結果の確認方法:
- *   左の test/notification.gs を選択
- *   → 左上のプルダウンで check_tutor_list を選択
- *   → 再生ボタン (三角マーク) で実行
- *   → Ctrl + Enter で結果を確認
- */
-var tutor_timetable = [
-  // 2 限   3 限    4 限    5 限
-  [ '御船', '山田', '高橋', ''     ], // 月
-  [ '北川', '古川', '宇治', '花瀬' ], // 火
-  [ '山崎', '寛島', '青木', ''     ], // 水
-  [ '大西', '内藤', '新谷', '大迫' ], // 木
-  [ '万年', '岩本', '林'  , '武内' ], // 金
-]
-
-
 // ==================== 通知メール関連 ====================
 /**
  * @desc   通知メールを送信する
  * @param  {number} dow    - 曜日 (0: 日 ... 6: 土)
  * @param  {number} period - 時限
- * @param           form_data - 予約フォームで入力された内容
+ * @param  {Object} form_data - 予約フォームで入力された内容
  */
 function send_notification_mail(form_data) {
   // 予約された曜日/時限の抽出
@@ -38,7 +19,7 @@ function send_notification_mail(form_data) {
   var period = form_data.period.match(/\d/)[0]
 
   // メール送信先アドレス
-  var address = settings.notification_address;
+  var address = settings[stage].notification_address;
 
   // メール件名 (【月2: ○○さん】 チューター予約)
   var subject = get_notification_mail_subject(dow, period)
@@ -72,13 +53,44 @@ function get_notification_mail_subject(dow, period) {
  * @desc   チューターへの予約通知メールの本文を生成
  * @param  {number} dow       - 曜日 (0: 日 ... 6: 土)
  * @param  {number} period    - 時限
- * @param           form_data - 予約フォームで入力された内容
+ * @param  {Object} form_data - 予約フォームで入力された内容
  * @return {string} 件名
  */
 function get_notification_mail_body(dow, period, form_data) {
   var tutor  = get_tutor(dow, period)
   var target = (tutor ? (tutor + 'さん, (CC: ') : '') + 'チューター各位' + (tutor ? ')' : '')
 
+  var joined_form_data = join_form_data(form_data)
+
+  var stage_str = stage == 'dev' ? '開発用システムからのメールです. ご放念下さい.\n\n' : ''
+
+  // テンプレートリテラルが使えない...
+  var content = ''
+  content += target+',\n'
+  content += '\n'
+  content += stage_str
+  content += '下記の内容で予約されました. \n'
+  content += '\n'
+  content += '内容確認後, 担当チューターは,\n'
+  content += '  To: '+form_data.mail+' (予約者)\n'
+  content += '  Cc: '+address+' (チューターML)\n'
+  content += 'として返信してください.\n'
+  content += '\n'
+  content += '------------------------------\n'
+  content += joined_form_data+'\n'
+  content += '------------------------------\n'
+  content += '\n'
+
+  return content
+}
+
+
+/**
+ * @desc   フォームに投稿された回答を一覧形式に整形する
+ * @param  {Object} form_data - [説明]
+ * @return {string} 整形された回答データ
+ */
+function join_form_data(form_data) {
   var joined_form_data = ''
 
   // フォームの内容を送信用の文字列に整形
@@ -106,31 +118,11 @@ function get_notification_mail_body(dow, period, form_data) {
     joined_form_data += '\n'
   }
 
-  var stage_str = stage == 'dev' ? '開発用システムからのメールです. ご放念下さい.\n\n' : ''
-
-  // テンプレートリテラルが使えない...
-  var content = '\
-'+target+',\n\
-\n\
-'+stage_str+'下記の内容で予約されました. \n\
-\n\
-内容確認後, 担当チューターは,\n\
-  To: '+form_data.mail+' (予約者)\n\
-  Cc: '+address+' (チューターML)\n\
-として返信してください.\n\
-\n\
-------------------------------\n\
-'+joined_form_data+'\n\
-------------------------------\n\
-\n\
-'
-
-  return content
+  return joined_form_data
 }
 
 
-
-// =================== 日付関連の関数 ====================
+// =================== 日付関連のユーティリティ関数 ====================
 /**
  * @desc   曜日と時限から担当チューター名を取得する
  * @param  {number} dow    - 曜日 (0: 日 ... 6: 土)
@@ -166,6 +158,12 @@ function dow2dow_str(dow) {
 }
 
 
+/**
+ * @desc   Date オブジェクトから指定フォーマットで日付文字列を生成する
+ * @param  {Date}   date   - Date オブジェクト
+ * @param  {string} format - 日付文字列のフォーマットを指定
+ * @return {string} 日付文字列
+ */
 function date2date_str(date, format) {
   if (!format) {
     format = 'YYYY/MM/DD'
@@ -177,6 +175,12 @@ function date2date_str(date, format) {
 }
 
 
+/**
+ * @desc   Date オブジェクトから指定フォーマットで時刻文字列を生成する
+ * @param  {Date}   date   - Date オブジェクト
+ * @param  {string} format - 時刻文字列のフォーマットを指定
+ * @return {string} 時刻文字列
+ */
 function date2time_str(date, format) {
   if (!format) {
     format = 'hh:mm:ss'
