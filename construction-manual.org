@@ -23,14 +23,20 @@ GitHub Pages に HTML を置く.
 - カレンダーのみ: https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo
   - カレンダー ID: vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com
 
+TODO: 適当な図を入れる
+
 
 * 新フォーム移行作業
+以下, アカウント作成以外の作業を "開発用", "本番環境用" でそれぞれ行う
+テスト用のフォームは "【開発用】" 等を名前に付けておく
+
 ** Google アカウント作成
 - 今まではコモンズのアカウントを使用していたが, 管理のしやすさの都合で別途作成
   - ID: kgu.crescent.tutor
 
-** フォーム作成
-- https://docs.google.com/forms/ から新規フォームを作成
+** Google フォーム作成
+https://docs.google.com/forms/ から新規フォームを作成
+
 - 時間割画像と, 種質問項目を設定
 - 質問項目は以下の 8 個
   - 学部を選択してください * (ラジオボタン: 理工学部/総合政策学部/その他)
@@ -42,13 +48,9 @@ GitHub Pages に HTML を置く.
   - 開始時間の希望があれば記入してください * (時間入力フォーム)
   - 相談内容を記入してください *
 
-- 必要があれば, テスト用のフォームを別に生成する
-  - "【開発用】" 等を名前に付けておくとわかりやすい
-  - 今回は, 同じ GAS で判定ロジックのテストのみを別カレンダーを用いて行う
-  - デプロイの仕組みが整えば, 別で用意すべき
+** 予約を登録する用の Google カレンダーを作成
+https://calendar.google.com/calendar/ から新規カレンダーを作成する
 
-** 予約を登録する用のカレンダーを作成
-- https://calendar.google.com/calendar/
 - "+" ボタンから, "新しいカレンダー" を追加
 - "チューター予約" 等の名前でカレンダーを登録
 - 設定画面を開く (普通は画面したに "設定" ボタンが出る)
@@ -61,38 +63,55 @@ GitHub Pages に HTML を置く.
 - カレンダー ID を確認
   - 左の "カレンダーの統合" をクリック
   - カレンダー ID の欄の abcdefghijklmnopqrstuvwxyz@group.calendar.google.com 形式の
-    ID をコピー (メモ) しておく
-  - このカレンダーの公開 URL も (エディタ等に) メモしておく
-
-- 同様の作業を繰り返し, テスト用のカレンダーを別に生成する (必須)
-  - "【開発用】チューター予約" 等の名前にしておくとわかりやすい
-  - ID とカレンダーの公開 URL を同様にメモしておく
-
+    ID を (エディタ等に) メモしておく
+  - このカレンダーの公開 URL もメモしておく
 
 ** GAS 設定 (フォームからカレンダーへイベントを追加するプログラムを登録)
-GAS でフォームに投稿された時間帯にイベントを登録する.
-その際にチェックも行う.
+フォームに投稿された時, GAS で内容チェックも行い, 問題なければカレンダーに登録する.
+GAS のスクリプトは, フォームの回答が保存されるスプレッドシートに対して設定する
 
 - フォームの "回答" タブから回答のスプレッドシートを開く
 - タイムスタンプと各種質問のカラムからなるテーブルが生成される
 - ツール → スクリプトエディタ
   - この時, (複数の Google アカウントを切り替えて使用している人は)
     チューターの Google アカウントがデフォルトアカウントになっていないと開くのに失敗する
-    (デフォルトアカウントに切りかえてログアウト → チューターアカウントでログイン)
+    (デフォルトアカウントに切りかえてログアウト → チューターアカウントでログインして対応)
+
+- ファイル → プロジェクトのプロパティを開く
+- スクリプト ID をメモしておく(clasp でのデプロイに必要. 詳細は後述)
+
+** GAS へのデプロイ
+GAS にプログラムをアップロードする
+
+- settings.js に, 開発環境/本番環境それぞれの
+  フォームの URL, カレンダーの URL, カレンダー ID を記述 (形式は下記)
+
+  #+BEGIN_SRC js
+  var settings = {
+    "prod" : {
+      "form"      : "https://docs.google.com/forms/d/e/1FAIpQLSdeo86ioR4akCnrsQ1aP4KaKKh5oux3mkCuMxiHiFaFzZWZAQ/viewform",
+      "calendar"  : "https://calendar.google.com/calendar/embed?src=fnoa9u9fdefeppdj5f10ioklhc%40group.calendar.google.com&ctz=Asia%2FTokyo",
+      "cal_id"    : "fnoa9u9fdefeppdj5f10ioklhc@group.calendar.google.com",
+    },
+    "dev" : {
+      "form"      : "https://docs.google.com/forms/d/e/1FAIpQLScqKqY6Bq6Xo__o9CcNBZ1PaZsIuSEOfb961Ghkp_mnBwnPgw/viewform",
+      "calendar"  : "https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo",
+      "cal_id"    : "vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com",
+    },
+
+    "notification_address" : "tutor@ml.kwansei.ac.jp",
+  }
+  #+END_SRC
 
 
-- (エディタに以下のプログラムをペースト) → clasp でのデプロイ方法を追記
+- チューター担当時間割の設定
+TODO: settings.js に移行
+TODO: 書く
 
+- 後述するデプロイの準備を行った後,
+  このリポジトリの /gas ディレクトリ内で clasp push する
 
-*** プログラムで使用する ID の記述
-# - プログラム内の 2 箇所にメモしたカレンダー ID を記入
-#   - "「ここは本番環境用カレンダー ID」@group.calendar.google.com"
-#   - "「ここはテスト用カレンダー ID」@group.calendar.google.com"
-
-TODO: setting.js を整備したら書く
-
-
-*** テストの実行
+** GAS でのテストの実行
 この時点で, (テスト用) ID が正しく設定できていれば, テストが通るはず
 
 - 画面左のファイル一覧から, "tests/generate_mail_data.gs" を選択
@@ -101,7 +120,9 @@ TODO: setting.js を整備したら書く
 - Ctrl + Enter を押し, 全て OK になっていることを確認
 
 
-*** フォーム投稿時にプログラムが呼ばれるようにする
+** トリガの設定
+フォーム投稿時にプログラムが呼ばれるようにする
+
 - スクリプトエディタの "編集" → "現在のプロジェクトのトリガー" をクリック
 - "トリガーを追加" をクリック
 - 登録フォームに以下を記載して "保存" をクリック
@@ -115,24 +136,14 @@ TODO: setting.js を整備したら書く
 - リストに追加されていれば成功
 
 
-** チューター担当時間割の設定
-TODO: 書く
-
-
 ** 動作確認 (フォームに投稿してみる)
 - 正しい日付/時間等で, 自分のメールアドレスを使って予約
+  - 予約者への仮予約メールが来ることを確認
+  - チューターへの予約通知メールが来ることを確認
   - カレンダーに入ることを確認
-  - 仮予約メールが来ることを確認
 
 - 入力が不正な場合も確認
   - 上記のテストが通っていれば, 問題ないはず
-
-
-** 担当者への予約通知を設定
-- TODO: 書く
-
-*** 動作確認 (フォームに投稿してみる)
-- 予約してみて通知メールが正しければ OK
 
 
 ** GitHub Pages での公開
@@ -140,20 +151,18 @@ TODO: 書く
 予約フォームには Google カレンダーと Google フォームを同時に表示させるため,
 別の HTML をかませる.
 関学のサーバに HTML を置くと手間がかかる問題があるので,
-GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する
+GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する.
 
 - 普通に登録
   - ID: kgu-crescent-tutor
 
-
 *** フォーム用リポジトリの作成
 - 右上の "+" ボタンから New Repository
-  - Repository name: reservation-form
+  - Repository name: reservation-form (開発用は reservation-form-dev)
   - ほかはそのまま
 
-
 *** リポジトリ内の HTML の公開設定
-- /docs ディレクトリ内に html ファイルを含むリポジトリを push (Git の話はここでは省略)
+- /docs ディレクトリ内に index.html があることを確認して push (Git の話はここでは省略)
 - プロジェクトの settings の下のほうにある "GitHub Pages" を探す
 - Source を None から Master branch /docs folder に変更
 - "Save" をクリック
@@ -168,5 +177,12 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する
 
 
 
-* 参考になる (かもしれない) ページ
+* テスト
+- GAS 上でテストをするためのライブラリ
+
+* デプロイ
+- 方法1: clasp を使用
+- 方法2: スクリプトエディタにコピペ
+
+* 参考 (になるかもしれない) ページ
 - \url{https://tom2rd.sakura.ne.jp/wp/2017/07/27/post-5346/}
