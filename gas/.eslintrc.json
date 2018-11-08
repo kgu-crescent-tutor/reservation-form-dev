@@ -1,0 +1,13 @@
+{
+    "extends": ["eslint:recommended"],
+    "plugins": [
+      "googleappsscript"
+    ],
+    "parserOptions": {},
+    "env": {
+      "browser": false,
+      "googleappsscript/googleappsscript": true
+    },
+    "globals": {},
+    "rules": {}
+}
