@@ -8,6 +8,8 @@
       "browser": false,
       "googleappsscript/googleappsscript": true
     },
-    "globals": {},
+    "globals": {
+      "global": true
+    },
     "rules": {}
 }

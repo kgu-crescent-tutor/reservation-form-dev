@@ -32,6 +32,17 @@ function send_notification_mail(form_data) {
 }
 
 
+// function generate_notification_mail(mail_content) {
+//   var subject = mail_content.notification.subject
+//   var body    = form_data.name + "さん,\n\n"
+
+//   mail_body += mail_content.response.body
+//   mail_body += mail_contents.FOOTER.response
+
+//   return {'subject': mail_subject, 'body': mail_body}
+// }
+
+
 /**
  * @desc   チューターへの予約通知メールの件名を生成
  * @param  {number} dow    - 曜日 (0: 日 ... 6: 土)
