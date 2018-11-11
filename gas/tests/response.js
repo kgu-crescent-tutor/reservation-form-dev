@@ -47,7 +47,7 @@ function test_response_mail() {
 
   var mail = generate_response_mail(mail_content, p.form_data.name)
 
-  is(mail.subject, p.exp.response.subject)
-  is(mail.body,    p.exp.response.body)
+  is(mail.subject, p.exp.response.subject, "予約者への返信メールの件名が正しい")
+  is(mail.body,    p.exp.response.body,    "予約者への返信メールの本文が正しい")
 }
 

@@ -29,15 +29,8 @@ function test_notification_mail() {
 
   var mail = generate_notification_mail(mail_content, p.form_data.name)
 
-  is(mail.subject, p.exp.subject)
-  is(mail.body,    p.exp.body)
-
-  // 予約された曜日/時限の抽出
-  var dow    = date2dow(form_data.date)
-  var period = form_data.period.match(/\d/)[0]
-
-  Logger.log( get_notification_mail_subject(dow, period) )
-  Logger.log( get_notification_mail_body   (dow, period, form_data) )
+  is(mail.subject, p.exp.notification.subject, "チューターへの通知メールの件名が正しい")
+  is(mail.body,    p.exp.notification.body   , "チューターへの通知メールの本文が正しい")
 }
 
 

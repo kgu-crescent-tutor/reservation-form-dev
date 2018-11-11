@@ -116,7 +116,7 @@ var mail_contents = {
     },
     "notification": {
       "enabled": 1,
-      "subject": 'クレセントチューター 仮予約',
+      "subject": '【$(dow_str)$(period): $(tutor)】クレセントチューター 仮予約',
       "body"   : '下記の内容で予約されました. \n\n内容確認後, 担当チューターは,\n  To: $(form_data.mail) (予約者)\n  Cc: '+settings.tutor_address+' (チューターML)\nとして返信してください.'
     },
   },
@@ -196,6 +196,7 @@ var mail_contents = {
     },
   },
 }
+
 
 
 
