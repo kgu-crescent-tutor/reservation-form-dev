@@ -11,6 +11,8 @@ Google カレンダーと Google フォームを同時に表示する.
 関学の WEB サーバは管理の都合で使わない方がよさそうなので,
 GitHub Pages に HTML を置く.
 
+[[file:img/configuration.png]]
+
 ** 本番環境
 - URL: https://kgu-crescent-tutor.github.io/reservation-form/
 - フォームのみ: https://docs.google.com/forms/d/e/1FAIpQLSdeo86ioR4akCnrsQ1aP4KaKKh5oux3mkCuMxiHiFaFzZWZAQ/viewform
@@ -80,6 +82,7 @@ GAS のスクリプトは, フォームの回答が保存されるスプレッ�
 - ファイル → プロジェクトのプロパティを開く
 - スクリプト ID をメモしておく(clasp でのデプロイに必要. 詳細は後述)
 
+
 ** GAS へのデプロイ
 GAS にプログラムをアップロードする
 
@@ -106,10 +109,11 @@ GAS にプログラムをアップロードする
 
 - チューター担当時間割の設定
 TODO: settings.js に移行
-TODO: 書く
+TODO: 別途まとめる更新手順書に移行する
 
 - 後述するデプロイの準備を行った後,
   このリポジトリの /gas ディレクトリ内で clasp push する
+
 
 ** GAS でのテストの実行
 この時点で, (テスト用) ID が正しく設定できていれば, テストが通るはず
@@ -175,7 +179,9 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する.
   #+BEGIN_SRC html
   #+END_SRC
 
-
+*
+$ npm install -g eslint eslint-plugin-googleappsscript
+$ eslint *.js tests/*.js
 
 * テスト
 - GAS 上でテストをするためのライブラリ
