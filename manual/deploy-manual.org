@@ -1,0 +1,40 @@
+* デプロイ方法について
+** フロント
+GitHub Pages として公開したリポジトリに git push するだけ
+
+
+** バックエンド
+方法は 2 種類あるが, node が使える場合は方法2がおすすめ
+
+*** 方法1
+- /gas 内の *.js を "(同じ名前).gs" として GAS の web エディタにコピペ
+- /gas/tests 内の *.js を "/test/s(同じ名前).gs" として GAS の web エディタにコピペ
+
+*** 方法2
+- (注意1) .clasp.json は機密情報なので, git に入れない
+  - 誤って push までしてしまった場合は, 別の GAS を作成すること
+
+- (注意2) 事前に編集した状態で clone すると, ローカルの js ファイルがリモートのファイルで更新される
+  - 事前に js ファイルを git commit しておく
+  - clone した後に状態が戻るので, git checkout . する
+
+- 初回のみ
+  - $ npm i -g @google/clasp
+    - which clasp でインストールできたことを確認
+    - うまくいかない時は npm が古いかも？
+  - GAS API を有効化
+    - https://script.google.com/home/usersettings で Google Apps Script API をオンにする
+  - $ clasp login
+  - ブラウザでログイン
+  - デプロイしたい
+  - $ clasp clone (スクリプトID)  # 注意 #
+
+
+- デプロイ時
+  - $ clasp push
+
+*** GAS で eslint を使いたい時
+- $ npm install -g eslint eslint-plugin-googleappsscript
+- $ eslint *.js tests/*.js 等
+  - GAS では別ファイルをまたいだ参照が可能なので, unused と undefined が出るけれど...
+
