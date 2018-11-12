@@ -1,6 +1,3 @@
-
-
-// =================== 日付関連のユーティリティ関数 ====================
 /**
  * @desc   曜日と時限から担当チューター名を取得する
  * @param  {number} dow    - 曜日 (0: 日 ... 6: 土)
@@ -8,12 +5,45 @@
  * @return {string} チューター名
  */
 function get_tutor(dow, period) {
-  var day_list = tutor_timetable[dow - 1]
+  if ( ! dow || ! period )
+    throw Error("dow or period is undefined")
+
+  var day_list = tutor_timetable[stage][dow - 1]
   var tutor    = day_list ? day_list[period - 2] : undefined
   return tutor ? tutor : undefined
 }
 
 
+/**
+ * @desc   開始/終了時刻の日時オブジェクトの生成
+ * @param  {number} [arg1] - [説明]
+ * @param  {string} [arg2] - [説明]
+ * @return {string} [説明]
+ */
+function get_start_and_end(form_data) {
+  if ( ! form_data )
+    throw Error("form_data is undefined")
+
+  var date       = new Date(form_data.date)
+  var start_time = new Date(form_data.time)
+  var end_time   = new Date(start_time.getTime())
+  end_time.setMinutes(start_time.getMinutes() + tutoring_duration)
+
+  var start_date_time = new Date(
+    date.getFullYear(), date.getMonth(), date.getDate(),
+    start_time.getHours(), start_time.getMinutes(), 0
+  )
+  var end_date_time   = new Date(
+    date.getFullYear(), date.getMonth(), date.getDate(),
+    end_time.getHours(), end_time.getMinutes(), 0
+  )
+
+  return { 'start': start_date_time, 'end': end_date_time }
+}
+
+
+
+// =================== 日付関連 ====================
 /**
  * @desc   日付から曜日を取得する
  * @param  {string} date - 日付 (yyyy-mm-dd のみ動作確認)
@@ -43,9 +73,8 @@ function dow2dow_str(dow) {
  * @return {string} 日付文字列
  */
 function date2date_str(date, format) {
-  if (!format) {
-    format = 'YYYY/MM/DD'
-  }
+  if ( ! format ) { format = 'YYYY/MM/DD' }
+
   format = format.replace(/YYYY/g, date.getFullYear());
   format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
   format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
@@ -60,13 +89,15 @@ function date2date_str(date, format) {
  * @return {string} 時刻文字列
  */
 function date2time_str(date, format) {
-  if (!format) {
-    format = 'hh:mm:ss'
-  }
+  if ( ! format ) {     format = 'hh:mm:ss' }
+
   format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
   format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
   format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
   return format;
 }
+
+
+
 
 

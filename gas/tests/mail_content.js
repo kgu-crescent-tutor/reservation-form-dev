@@ -139,14 +139,15 @@ function test_mail_content() {
     if ( pattern.setup ) pattern.setup(start_date_time, end_date_time)
 
     // エラーチェック処理 (メイン)
-    var mail_content = get_mail_content(form_data, start_date_time, end_date_time, cal)
+    var code = check_error(form_data, start_date_time, end_date_time, cal)
 
     // テスト
-    is( mail_content.code, pattern.code, pattern.desc )
+    is( code, pattern.code, 'エラー判定が正しく行える - ' + pattern.desc )
 
     // (必要なら) 後処理
     if ( pattern.teardown ) pattern.teardown(start_date_time, end_date_time)
   }
 }
+
 
 

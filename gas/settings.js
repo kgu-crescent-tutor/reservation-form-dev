@@ -43,6 +43,12 @@ var settings = {
 
 
 /**
+ * @desc   チュータリング時間
+ */
+var tutoring_duration = 30
+
+
+/**
  * @desc   スプレッドシートのカラム情報
  *         本来は取得したものを使用する or 取得して変更されていないかチェックすべき
  */
@@ -117,7 +123,7 @@ var mail_contents = {
     "notification": {
       "enabled": 1,
       "subject": '【$(dow_str)$(period): $(tutor)】クレセントチューター 仮予約',
-      "body"   : '下記の内容で予約されました. \n\n内容確認後, 担当チューターは,\n  To: $(form_data.mail) (予約者)\n  Cc: '+settings.tutor_address+' (チューターML)\nとして返信してください.'
+      "body"   : '下記の内容で予約されました.\n\n内容確認後, 担当チューターは,\n  To: $(form_data.mail) (予約者)\n  Cc: '+settings.tutor_address+' (チューターML)\nとして返信してください.'
     },
   },
 
@@ -196,7 +202,4 @@ var mail_contents = {
     },
   },
 }
-
-
-
 

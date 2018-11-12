@@ -1,8 +1,9 @@
 /**
  *  予約時のメール通知処理
  *
- *  2017/06/22  テスト運用終了. 旧プログラムから移行 (oosako)
+ *  2017/06/22  テスト運用終了. 旧プログラムから移行
  *  2018/11/07  リファクタリング
+ *  2018/11/12  通知メール生成処理のみを抽出
  */
 
 
@@ -19,12 +20,11 @@ function generate_notification_mail(mail_content, form_data) {
   var dow    = date2dow(form_data.date)
   var period = form_data.period.match(/\d/)[0]
 
-  var subject = get_notification_mail_subject(dow, period)
-  var body    = get_notification_mail_body(dow, period, form_data)
+  var subject = get_notification_mail_subject(mail_content, dow, period)
+  var body    = get_notification_mail_body(mail_content, dow, period, form_data)
 
   return {
-    'to'     : 'settings[stage].notification_address;',
-    'cc'     : '',
+    'to'     : settings[stage].notification_address,
     'subject': subject,
     'body'   : body
   }
@@ -83,9 +83,8 @@ function get_notification_mail_body(mail_content, dow, period, form_data) {
   body += mail_contents.FOOTER.notification
   body += '\n\n'
   body += '------------------------------\n'
-  body += join_form_data(form_data)+'\n'
+  body += join_form_data(form_data)
   body += '------------------------------\n'
-  body += '\n'
 
   return body
 }
@@ -97,6 +96,8 @@ function get_notification_mail_body(mail_content, dow, period, form_data) {
  * @return {string} 整形された回答データ
  */
 function join_form_data(form_data) {
+  if ( ! form_data ) throw Error("form_data is undefined")
+
   var joined_form_data = ''
 
   // フォームの内容を送信用の文字列に整形
@@ -108,14 +109,15 @@ function join_form_data(form_data) {
     }
     else if ( column.title === 'date' ) {
       joined_form_data += ('  ' + column.title_jp + ': ' )
-      joined_form_data += date2date_str( form_data.date )
+      joined_form_data += date2date_str( new Date(form_data.date) )
 
       var dow = dow2dow_str(date2dow(form_data.date))
       joined_form_data += ( " (" + dow + ")" ) // 曜日も付ける
     }
     else if ( column.title === 'time' ) {
       joined_form_data += ('  ' + column.title_jp + ': ' )
-      joined_form_data += date2time_str( form_data.time, 'hh:mm' )
+      joined_form_data += date2time_str( new Date(form_data.time), 'hh:mm' )
+      // joined_form_data += form_data.time
     }
     else {
       Logger.log('internal error')
@@ -126,3 +128,7 @@ function join_form_data(form_data) {
 
   return joined_form_data
 }
+
+
+
+

@@ -7,7 +7,10 @@
  *   → 再生ボタン (三角マーク) で実行
  *   → Ctrl + Enter で結果を確認
  */
-var tutor_timetable = [
+var tutor_timetable = {}
+
+// 本番用
+tutor_timetable.prod = [
   // 2 限   3 限    4 限    5 限
   [ '御船', '山田', '高橋', ''     ], // 月
   [ '北川', '古川', '宇治', '花瀬' ], // 火
@@ -16,3 +19,12 @@ var tutor_timetable = [
   [ '万年', '岩本', '林'  , '武内' ], // 金
 ]
 
+// テスト用
+tutor_timetable.dev = [
+  // 2 限   3 限    4 限    5 限
+  [ '(Mon2)', '(Mon3)', '(Mon4)', '(Mon5)' ], // 月
+  [ '(Tue2)', '(Tue3)', '(Tue4)', '(Tue5)' ], // 火
+  [ '(Wed2)', '(Wed3)', '(Wed4)', '(Wed5)' ], // 水
+  [ '(Thu2)', '(Thu3)', '(Thu4)', '(Thu5)' ], // 木
+  [ '(Fri2)', '(Fri3)', '(Fri4)', '(Fri5)' ], // 金
+]
