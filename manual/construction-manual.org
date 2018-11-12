@@ -180,4 +180,4 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する.
 
 
 * 参考 (になるかもしれない) ページ
-- \url{https://tom2rd.sakura.ne.jp/wp/2017/07/27/post-5346/}
+- https://tom2rd.sakura.ne.jp/wp/2017/07/27/post-5346/
