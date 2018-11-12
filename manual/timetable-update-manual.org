@@ -1,0 +1,25 @@
+* 担当者時間割の更新手順
+- [[https://script.google.com/macros/d/MRiaNFC8BTzV4xPsN5y4Ejc9cFyMI6jSi/edit?uiv=2&mid=ACjPJvGo3zdnErLHB6iqpTCx0wXWAk94j8hjTIDUaQRhWxgyJba7jTr60cqIeOkIFGDLL39-TJJ3hBBfvjVrgR60WHym2vPjYz4y_wNYqJXteasLqQ6ZQyAsz4klSiSbHmQAhn_OQnUZSew]["【prod】 チューター予約フォーム/チューター予約フォーム（回答）" のツール → スクリプトエディタ]] を開く
+- 左のファイル一覧から timetable.gs を開く
+- 下記のような, 時間割の部分 (本番用) を編集する
+  #+BEGIN_SRC js
+  // 本番用
+  tutor_timetable.prod = [
+    // 2 限   3 限    4 限    5 限
+    [ '御船', '山田', '高橋', ''     ], // 月
+    [ '北川', '古川', '宇治', '花瀬' ], // 火
+    [ '山崎', '寛島', '青木', ''     ], // 水
+    [ '大西', '内藤', '新谷', '大迫' ], // 木
+    [ '万年', '岩本', '林'  , '武内' ], // 金
+  ]
+  #+END_SRC
+
+
+* 担当者時間割の確認手順
+- 左のファイル一覧から tests/timetable.gs を開く
+- 左上の "関数を選択" のプルダウンから, check_tutor_list を選択
+- プルダウンの左にある, 再生マーク (横向き三角マーク) をクリック
+- Ctrl + Enter を押してログを確認
+- 表示されている内容が正しいか確認
+
+
