@@ -1,17 +1,21 @@
 #+STARTUP: showall
 
-* 現在のフォームの問題点
+* 旧フォームの問題点
 - 予約者が, 既に予約が入っている時間に予約を入れてしまう
 - 予約者が, 過去の日付などの不正な日時を入力してしんまう
 - チューター側で予約一覧が確認できない (他のチューターの空き時間が分からない)
 
 
 * 新フォームの概要
-Google カレンダーと Google フォームを同時に表示する.
-関学の WEB サーバは管理の都合で使わない方がよさそうなので,
-GitHub Pages に HTML を置く.
+- Google カレンダーと Google フォームを同時に表示する
+- 関学の WEB サーバは管理の都合で使わない方がよさそうなので, GitHub Pages に HTML を置く
+- フォームへの投稿は, スプレッドシートにトリガを設定して GAS で処理する
 
 [[file:img/configuration.png]]
+
+
+* 環境
+上の図の環境を, 本番用, 開発用の 2 パターン用いる
 
 ** 本番環境
 - URL: https://kgu-crescent-tutor.github.io/reservation-form/
@@ -25,12 +29,10 @@ GitHub Pages に HTML を置く.
 - カレンダーのみ: https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo
   - カレンダー ID: vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com
 
-TODO: 適当な図を入れる
-
 
 * 新フォーム移行作業
 以下, アカウント作成以外の作業を "開発用", "本番環境用" でそれぞれ行う
-テスト用のフォームは "【開発用】" 等を名前に付けておく
+テスト用のフォームは "【開発用】" 等を名前に付けて区別できるようにする
 
 ** Google アカウント作成
 - 今まではコモンズのアカウントを使用していたが, 管理のしやすさの都合で別途作成
@@ -50,7 +52,7 @@ https://docs.google.com/forms/ から新規フォームを作成
   - 開始時間の希望があれば記入してください * (時間入力フォーム)
   - 相談内容を記入してください *
 
-** 予約を登録する用の Google カレンダーを作成
+** Google カレンダーを作成 (予約を登録する用)
 https://calendar.google.com/calendar/ から新規カレンダーを作成する
 
 - "+" ボタンから, "新しいカレンダー" を追加
@@ -68,7 +70,7 @@ https://calendar.google.com/calendar/ から新規カレンダーを作成する
     ID を (エディタ等に) メモしておく
   - このカレンダーの公開 URL もメモしておく
 
-** GAS 設定 (フォームからカレンダーへイベントを追加するプログラムを登録)
+** Google Apps Script を作成 (フォームからカレンダーへイベントを追加するプログラムを登録)
 フォームに投稿された時, GAS で内容チェックも行い, 問題なければカレンダーに登録する.
 GAS のスクリプトは, フォームの回答が保存されるスプレッドシートに対して設定する
 
@@ -101,36 +103,28 @@ GAS にプログラムをアップロードする
       "calendar"  : "https://calendar.google.com/calendar/embed?src=vf7q4t3s0gg2u5i5m6q82i3ki0%40group.calendar.google.com&ctz=Asia%2FTokyo",
       "cal_id"    : "vf7q4t3s0gg2u5i5m6q82i3ki0@group.calendar.google.com",
     },
-
-    "notification_address" : "tutor@ml.kwansei.ac.jp",
   }
   #+END_SRC
 
-
-- チューター担当時間割の設定
-TODO: settings.js に移行
-TODO: 別途まとめる更新手順書に移行する
-
-- 後述するデプロイの準備を行った後,
-  このリポジトリの /gas ディレクトリ内で clasp push する
+- デプロイマニュアルに従ってデプロイする
 
 
 ** GAS でのテストの実行
 この時点で, (テスト用) ID が正しく設定できていれば, テストが通るはず
 
-- 画面左のファイル一覧から, "tests/generate_mail_data.gs" を選択
-- 画面左上の "関数を選択" から "test_generate_mail_data" を選択
+- 画面左のファイル一覧から, "tests/full.gs" を選択
+- 画面左上の "関数を選択" から "test_all" を選択
 - 左隣の再生ボタン (三角マーク) をクリック
 - Ctrl + Enter を押し, 全て OK になっていることを確認
 
 
 ** トリガの設定
-フォーム投稿時にプログラムが呼ばれるようにする
+フォーム投稿時に GAS が呼ばれるようにする
 
 - スクリプトエディタの "編集" → "現在のプロジェクトのトリガー" をクリック
 - "トリガーを追加" をクリック
 - 登録フォームに以下を記載して "保存" をクリック
-  - 実行する関数を選択: register_reservation_in_calandar
+  - 実行する関数を選択: on_submit_form
   - 実行するデプロイを選択: HEAD
   - イベントのソースを選択: スプレッドシートから
   - イベントの種類を選択: フォーム送信時
@@ -166,29 +160,24 @@ GitHub (https://github.co.jp/) の機能 GitHub Pages で公開する.
   - ほかはそのまま
 
 *** リポジトリ内の HTML の公開設定
-- /docs ディレクトリ内に index.html があることを確認して push (Git の話はここでは省略)
+(Git の話はここでは省略)
+
+- 2 カラムでカレンダー/フォーム表示する /docs/index.html を作成して push
 - プロジェクトの settings の下のほうにある "GitHub Pages" を探す
 - Source を None から Master branch /docs folder に変更
 - "Save" をクリック
 - Save ボタンの上の "Your site is ready to be published at (公開URL)" の URL をメモ
 
 
-** 公開する HTML (カレンダー/フォームのページ) 作成
-以下の内容で index.html を作成
-
-  #+BEGIN_SRC html
-  #+END_SRC
-
-*
-$ npm install -g eslint eslint-plugin-googleappsscript
-$ eslint *.js tests/*.js
-
 * テスト
-- GAS 上でテストをするためのライブラリ
+- 簡易テスト用の関数 is を tests/test.js に作成 (Test::More 風)
+  - エラーチェック
+  - メール内容生成 (返信/通知)
+
 
 * デプロイ
-- 方法1: clasp を使用
-- 方法2: スクリプトエディタにコピペ
+- 別ファイル (deploy.org) 参照
+
 
 * 参考 (になるかもしれない) ページ
 - \url{https://tom2rd.sakura.ne.jp/wp/2017/07/27/post-5346/}
