@@ -42,6 +42,10 @@
           float:   left;
       }
 
+      #form-wrapper {
+          overflow: scroll;
+      }
+
       div.inline-block object#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
@@ -59,7 +63,8 @@
         <p>JavaScript を有効にしてください.</p>
         <p>JavaScript が有効化されていても表示されない場合, ご使用のブラウザがサポートされていない可能性があります.</p>
       </object>
-    </div>    <div class="inline-block">
+    </div>
+    <div class="inline-block" id="form-wrapper">
       <object type="text/html" id="form">
       </object>
     </div>
@@ -99,6 +104,7 @@
     }
   </script>
 </html>
+
 
 
 
