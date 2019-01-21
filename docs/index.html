@@ -30,8 +30,8 @@
       html,
       body,
       div.inline-block,
-      div.inline-block object#calendar,
-      div.inline-block object#form {
+      div.inline-block iframe#calendar,
+      div.inline-block iframe#form {
           margin:  0;
           padding: 0;
           border:  none;
@@ -43,20 +43,20 @@
       }
 
       #calendar-wrapper,
-      #calendar-wrapper object#calender {
+      #calendar-wrapper iframe#calender {
           overflow: hidden;
       }
 
       #form-wrapper,
-      #form-wrapper object#calender {
+      #form-wrapper iframe#calender {
           overflow-y: auto;
       }
 
-      div.inline-block object#calendar {
+      div.inline-block iframe#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
       }
-      div.inline-block object#form {
+      div.inline-block iframe#form {
           width:   var(--form-width);
           height:  var(--form-height);
       }
