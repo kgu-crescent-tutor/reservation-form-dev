@@ -42,8 +42,12 @@
           float:   left;
       }
 
+      #calendar-wrapper {
+          overflow: hidden;
+      }
+
       #form-wrapper {
-          overflow: auto;
+          overflow-y: auto;
       }
 
       div.inline-block object#calendar {
@@ -58,7 +62,7 @@
   </head>
 
   <body>
-    <div class="inline-block">
+    <div class="inline-block" id="calendar-wrapper">
       <object type="text/html" id="calendar">
         <p>JavaScript を有効にしてください.</p>
         <p>JavaScript が有効化されていても表示されない場合, ご使用のブラウザがサポートされていない可能性があります.</p>
