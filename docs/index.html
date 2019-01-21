@@ -38,12 +38,13 @@
       }
 
       div.inline-block {
+          -webkit-overflow-scrolling: touch;
           display: inline-block;
           float:   left;
       }
 
-      #calendar-wrapper,
-      #calendar-wrapper iframe#calender {
+      div#calendar-wrapper,
+      div#calendar-wrapper iframe#calender {
           overflow: hidden;
       }
 
@@ -52,11 +53,11 @@
           overflow-y: auto;
       }
 
-      div.inline-block iframe#calendar {
+      div.calendar-wrapper iframe#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
       }
-      div.inline-block iframe#form {
+      div.form-wrapper iframe#form {
           width:   var(--form-width);
           height:  var(--form-height);
       }
