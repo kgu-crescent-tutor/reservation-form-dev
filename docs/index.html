@@ -11,9 +11,11 @@
       :root {
           --scroll-bar-width: calc(100vw - 100%);
           --calendar-width:   calc(60vw);
-          --calendar-height:  100vh;
+          /* --calendar-height:  100vh; */
+          --calendar-height:  calc(var(--vh, 1vh) * 100);
           --form-width:       calc(100vw - var(--calendar-width) - 1em);
-          --form-height:      100vh;
+          /* --form-height:      100vh; */
+          --form-height:      calc(var(--vh, 1vh) * 100);
       }
 
       html,
@@ -79,6 +81,10 @@
   </body>
 
   <script>
+    let vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+
     const urls = {
       "prod" : {
         "host_path" : "kgu-crescent-tutor.github.io/reservation-form/",
