@@ -12,10 +12,10 @@
           --scroll-bar-width: calc(100vw - 100%);
           --calendar-width:   calc(60vw);
           /* --calendar-height:  100vh; */
-          --calendar-height:  calc(var(--vh, 1vh) * 100);
+          --calendar-height:  -webkit-calc(100% - 0px);
           --form-width:       calc(100vw - var(--calendar-width) - 1em);
           /* --form-height:      100vh; */
-          --form-height:      calc(var(--vh, 1vh) * 100);
+          --form-height:      -webkit-calc(100% - 0px);
       }
 
       html,
