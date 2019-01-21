@@ -48,19 +48,20 @@
           overflow: hidden;
       }
 
-      #form-wrapper,
-      #form-wrapper iframe#calender {
+      #form-wrapper {
+          overflow: hidden;
           form-height: 100vh !important;
+      }
+      #form-wrapper iframe#form {
+          width:   var(--form-width);
+          height:  var(--form-height);
           overflow-y: auto;
+          form-height: 100%;
       }
 
       div.calendar-wrapper iframe#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
-      }
-      div.form-wrapper iframe#form {
-          width:   var(--form-width);
-          height:  var(--form-height);
       }
     </style>
   </head>
