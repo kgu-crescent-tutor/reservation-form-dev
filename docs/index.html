@@ -12,7 +12,7 @@
           --scroll-bar-width: calc(100vw - 100%);
           --calendar-width:   calc(60vw);
           --calendar-height:  100vh;
-          --form-width:       calc(100vw - var(--calendar-width) -1em);
+          --form-width:       calc(100vw - var(--calendar-width) - 1em);
           --form-height:      100vh;
       }
 
@@ -44,6 +44,7 @@
 
       #form-wrapper {
           overflow: scroll;
+          
       }
 
       div.inline-block object#calendar {
@@ -52,7 +53,7 @@
       }
       div.inline-block object#form {
           width:   var(--form-width);
-          /* height:  var(--form-height); */
+          height:  var(--form-height);
       }
     </style>
   </head>
