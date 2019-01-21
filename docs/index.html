@@ -45,23 +45,22 @@
 
       div#calendar-wrapper,
       div#calendar-wrapper iframe#calender {
-          overflow: hidden;
-      }
-
-      #form-wrapper {
-          overflow: hidden;
-          form-height: 100vh !important;
-      }
-      #form-wrapper iframe#form {
-          width:   var(--form-width);
-          height:  var(--form-height);
-          overflow-y: auto;
-          form-height: 100%;
-      }
-
-      div.calendar-wrapper iframe#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
+          overflow: hidden;
+      }
+
+      div#form-wrapper,
+      div#form-wrapper iframe#form {
+          width:   var(--form-width);
+          height:  var(--form-height);
+      }
+
+      div#form-wrapper {
+          overflow: hidden;
+      }
+      div#form-wrapper iframe#form {
+          overflow-y: auto;
       }
     </style>
   </head>
