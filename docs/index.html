@@ -10,19 +10,15 @@
     <style>
       :root {
           --scroll-bar-width: calc(100vw - 100%);
-          --calendar-width:   60%;
-          --calendar-height:  calc(100% - 0px);
-          --calendar-height:  -webkit-calc(100% - 0px);
-          --form-width:       calc(100% - var(--calendar-width) - 1em);
-          --form-height:      calc(100% - 0px);
-          --form-height:      -webkit-calc(100% - 0px);
+          --calendar-width:   calc(60vw);
+          --calendar-height:  100vh;
+          --form-width:       calc(100vw - var(--calendar-width));
+          --form-height:      100vh;
       }
 
       html,
       body {
           overflow: hidden;
-          position: fixed; /* iOS でスクロールしないけど動かせてしまう問題対策 */
-          height:   var(--form-height);
       }
 
       #text {
@@ -34,37 +30,25 @@
       html,
       body,
       div.inline-block,
-      div.inline-block iframe#calendar,
-      div.inline-block iframe#form {
+      div.inline-block object#calendar,
+      div.inline-block object#form {
           margin:  0;
           padding: 0;
           border:  none;
       }
 
       div.inline-block {
-          -webkit-overflow-scrolling: touch;
           display: inline-block;
           float:   left;
       }
 
-      div#calendar-wrapper,
-      div#calendar-wrapper iframe#calendar {
+      div.inline-block object#calendar {
           width:   var(--calendar-width);
           height:  var(--calendar-height);
-          overflow: hidden;
       }
-
-      div#form-wrapper,
-      div#form-wrapper iframe#form {
+      div.inline-block object#form {
           width:   var(--form-width);
           height:  var(--form-height);
-      }
-
-      div#form-wrapper {
-          overflow: hidden;
-      }
-      div#form-wrapper iframe#form {
-          overflow-y: auto;
       }
     </style>
   </head>
