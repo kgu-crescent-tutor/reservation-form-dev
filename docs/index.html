@@ -54,15 +54,14 @@
   </head>
 
   <body>
-    <div class="inline-block" id="calendar-wrapper">
-      <iframe type="text/html" id="calendar">
+    <div class="inline-block">
+      <object type="text/html" id="calendar">
         <p>JavaScript を有効にしてください.</p>
         <p>JavaScript が有効化されていても表示されない場合, ご使用のブラウザがサポートされていない可能性があります.</p>
-      </iframe>
-    </div>
-    <div class="inline-block" id="form-wrapper">
-      <iframe type="text/html" id="form">
-      </iframe>
+      </object>
+    </div>    <div class="inline-block">
+      <object type="text/html" id="form">
+      </object>
     </div>
   </body>
 
@@ -80,8 +79,10 @@
       },
     }
 
-    function update_iframe(element, url) {
-      let new_element = element.contentWindow.location.replace(url);
+    function update_object(element, data) {
+      let new_element = element.cloneNode(true)
+      new_element.setAttribute("data", data)
+      element.parentNode.replaceChild(new_element, element);
     }
 
     // ホスト名とリクエストパスを取得
@@ -89,14 +90,12 @@
 
     // prod にデプロイした場合のみ本番用フォーム/カレンダーを表示
     if ( current_host_path == urls.prod.host_path ) {
-      update_iframe( document.getElementById('calendar'), urls.prod.calendar )
-      update_iframe( document.getElementById('form'),     urls.prod.form )
+      update_object( document.getElementById('calendar'), urls.prod.calendar )
+      update_object( document.getElementById('form'),     urls.prod.form )
     }
     else {
-      update_iframe( document.getElementById('calendar'), urls.dev.calendar )
-      update_iframe( document.getElementById('form'),     urls.dev.form )
+      update_object( document.getElementById('calendar'), urls.dev.calendar )
+      update_object( document.getElementById('form'),     urls.dev.form )
     }
   </script>
 </html>
-
-
